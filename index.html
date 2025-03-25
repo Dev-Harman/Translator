@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Translation System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+        padding: 10px;
+      }
+      button {
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin: 5px;
+        border-radius: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Translation System</h2>
+      <button onclick="showTextTranslation()">Text Translation</button>
+      <button onclick="startVoiceTranslation()">Voice Translation</button>
+
+      <div id="text-translation" style="display: none">
+        <textarea
+          id="inputText"
+          placeholder="Enter text in English..."
+        ></textarea>
+        <select id="language">
+          <option value="pa">Punjabi</option>
+          <option value="hi">Hindi</option>
+        </select>
+        <button onclick="translateText()">Translate</button>
+        <textarea
+          id="outputText"
+          placeholder="Translated text..."
+          readonly
+        ></textarea>
+      </div>
+
+      <div id="voice-translation" style="display: none">
+        <h3>Real-Time Voice Translation</h3>
+        <p>Click the button and start speaking in English.</p>
+        <button onclick="startVoiceRecognition()">Start Speaking</button>
+        <textarea
+          id="voiceOutput"
+          placeholder="Translated voice text..."
+          readonly
+        ></textarea>
+      </div>
+    </div>
+
+    <script>
+      function showTextTranslation() {
+        document.getElementById("text-translation").style.display = "block";
+        document.getElementById("voice-translation").style.display = "none";
+      }
+
+      function startVoiceTranslation() {
+        document.getElementById("voice-translation").style.display = "block";
+        document.getElementById("text-translation").style.display = "none";
+      }
+
+      function translateText() {
+        let text = document.getElementById("inputText").value;
+        let targetLang = document.getElementById("language").value;
+        let url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURI(
+          text
+        )}`;
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("outputText").value = data[0]
+              .map((item) => item[0])
+              .join("");
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function startVoiceRecognition() {
+        let recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.start();
+
+        recognition.onresult = function (event) {
+          let voiceText = event.results[0][0].transcript;
+          let url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=hi&dt=t&q=${encodeURI(
+            voiceText
+          )}`;
+
+          fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("voiceOutput").value = data[0]
+                .map((item) => item[0])
+                .join("");
+            })
+            .catch((error) => console.error("Error:", error));
+        };
+      }
+    </script>
+  </body>
+</html>
